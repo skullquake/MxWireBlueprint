@@ -2,34 +2,9 @@ require(
 	{
 		packages:[
 			{
-				name:'_Detector',
-				location:'/widgets/MxWireBlueprint/lib/threejs/',
-				main:'Detector'
-			},
-			{
-				name:'_three',
-				location:'/widgets/MxWireBlueprint/lib/threejs/110/',
-				main:'three.min'
-			},
-			{
-				name:'_module',
-				location:'/widgets/MxWireBlueprint/lib/threejs/110/',
-				main:'three.module'
-			},
-			{
-				name:'_module',
-				location:'/widgets/MxWireBlueprint/lib/threejs/110/',
-				main:'three.module'
-			},
-			{
-				name:'_SVGLoader',
-				location:'/widgets/MxWireBlueprint/lib/threejs/110/',
-				main:'SVGLoader'
-			},
-			{
 				name:'_Three_amd',
 				location:'/widgets/MxWireBlueprint/lib/threejs/amd/',
-				main:'Three.amd'
+				main:'Three.amd.min'
 			}
 		]
 	},
@@ -51,7 +26,6 @@ require(
 		"dojo/_base/event",
 		"dojo/mouse",
 		"dojo/on",
-		//'_three',
 		'_Three_amd',
 		"dojo/text!MxWireBlueprint/widget/template/MxWireBlueprint.html"
 	],
@@ -73,9 +47,7 @@ require(
 		dojoEvent,
 		mouse,
 		on,
-		//_three,
 		_three,
-		//_Three_amd
 		widgetTemplate
 	){
 		"use strict";
@@ -266,7 +238,7 @@ require(
 				bloomThreshold: 0,
 				bloomRadius: 0
 			};
-
+//https://threejsfundamentals.org/threejs/lessons/threejs-post-processing.html
 			var bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
 			bloomPass.threshold = params.bloomThreshold;
 			bloomPass.strength = params.bloomStrength;
@@ -295,41 +267,30 @@ require(
 								window.paths=data;
 								for(var i=0;i<paths.length;i++){
 									var path=paths[i];
-									var material=new THREE.MeshBasicMaterial(
-										{
-											color:path.color,
-											side:THREE.DoubleSide,
-											depthWrite:false
-										}
-									);
-									/*
-									//var material=new THREE.MeshBasicMaterial ({ color: 0x00ffff});
-  const material = new THREE.MeshBasicMaterial({
-    color:0x00FFFF,
-    opacity: 0.2,
-    transparent: true,
-  });
-									*/
-									/*
-									var material=new THREE.MeshBasicMaterial ({ color: 0x00ffff, wireframe: true });
-		material=new THREE.LineBasicMaterial({
-		  color:0x10ff10,
-		  opacity:0.02,
-		  blending:THREE.AdditiveBlending,
-		  transparent:true});
-									*/
-									//var shapes=path.toShapes(true);
+									const material = new THREE.MeshBasicMaterial({
+										color:new THREE.Color(`hsl(${path.color.getHSL().l*100},100%,50%)`),
+										opacity: 0.8,
+										transparent: true,
+										wireframe: true
+									});
 									var shapes=path.toShapes();
+									window.shapes=shapes;
+									window.material=material;
 									for(var j=0;j<shapes.length;j++){
 										var shape=shapes[j];
-										var geometry=new THREE.ShapeBufferGeometry(shape);
-										var mesh=new THREE.Mesh(geometry,material);
-										mesh.translateZ(Math.random())
+										var extrudeSettings = {
+											steps: 2,
+											depth:path.color.getHSL().l*0.2,//
+											bevelEnabled: false,
+										};
+										var geometry = new THREE.ExtrudeBufferGeometry( shape, extrudeSettings );
+										var mesh = new THREE.Mesh( geometry, material ) ;
 										group.add(mesh);
 									}
 								}
 								window.group=group;
 								scene.add( group );
+								window.scene=scene;
 								var box=new THREE.Box3().setFromObject( group);
 								group.translateX(
 								    -box.min.x
