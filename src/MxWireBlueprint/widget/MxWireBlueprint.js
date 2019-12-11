@@ -130,7 +130,7 @@ require(
 */
 					console.log('----------------------------------------')
 				},
-				addSvgLoader:function(cb){
+				addModules:function(cb){
 					if(window.THREE.SVGLoader==null){
 						require(
 							{
@@ -139,14 +139,22 @@ require(
 										name:'_SVGLoader',
 										location:'/widgets/MxWireBlueprint/lib/threejs/110/',
 										main:'SVGLoader'
+									},
+									{
+										name:'_OrbitControls',
+										location:'/widgets/MxWireBlueprint/lib/threejs/110/',
+										main:'OrbitControls'
 									}
+
 								]
 							},
 							[
 								"_SVGLoader",
+								"_OrbitControls",
 							],
 							dojo.hitch(this,function(
-								_SVGLoader
+								_SVGLoader,
+								_OrbitControls
 							){
 								dojo.hitch(this,cb)();
 							})
@@ -181,7 +189,7 @@ require(
 				_updateRendering:function(callback){
 					if(this._contextObj!=null){
 						dojoStyle.set(this.domNode,"display","block");
-						this.addSvgLoader(this.testsvg)
+						this.addModules(this.testsvg)
 					} else {
 						dojoStyle.set(this.domNode,"display","none");
 					}
@@ -339,6 +347,7 @@ require(
 					// Create a basic perspective camera
 					var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 					camera.position.z = 8;
+					// add controls for the camera
 
 					// Create a renderer with Antialiasing
 					var renderer = new THREE.WebGLRenderer({antialias:true});
@@ -351,6 +360,7 @@ require(
 
 					// Append Renderer to DOM
 					this.domNode.appendChild( renderer.domElement );
+					var controls = new THREE.OrbitControls(camera,renderer.domElement );
 
 					// ------------------------------------------------
 					// FUN STARTS HERE
@@ -412,10 +422,15 @@ require(
 									group.add( mesh );
 
 								}
-								window.g=group;
+								window.group=group;
 
 							}
 							scene.add( group );
+
+							//var position = new THREE.Vector3().copy( group.children[0]);
+							//group.children[0].localToWorld( position );
+							//camera.lookAt( position );
+
 						}),
 						// called when loading is in progresses
 						function ( xhr ) {
@@ -432,18 +447,19 @@ require(
 					);
 
 
-
+					window.camera=camera;
 					// Render Loop
 					var render = function () {
 					  requestAnimationFrame( render );
 
 					  cube.rotation.x += 0.01;
 					  cube.rotation.y += 0.01;
-					  group.rotation.x += 0.01;
-					  group.rotation.y += 0.01;
+					  //group.rotation.x += 0.01;
+					  //group.rotation.y += 0.01;
 
 					  // Render the scene
-					  renderer.render(scene, camera);
+							renderer.render(scene, camera);
+							//controls.update();
 					};
 
 					render();
