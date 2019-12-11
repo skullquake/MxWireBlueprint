@@ -11,6 +11,7 @@ test/.project
 .idea/
 
 dist/
+tmp/
 
 node_modules/
 .editorconfig
