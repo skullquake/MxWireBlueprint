@@ -186,7 +186,9 @@ require(
 						const near=0.1;
 						const far=5;
 						var camera=new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,1000);
-						camera.position.z=2;
+						camera.position.z=0;
+						camera.position.x=0;
+						camera.position.y=5;
 						const scene=new THREE.Scene();
 						{
 							const color=0xFFFFFF;
@@ -195,6 +197,8 @@ require(
 							light.position.set(-1,2,4);
 							scene.add(light);
 						}
+var axesHelper = new THREE.AxesHelper( 5 );
+scene.add( axesHelper );
 						const boxWidth=0.1;
 						const boxHeight=0.1;
 						const boxDepth=0.1;
@@ -225,25 +229,25 @@ require(
 						composer.addPass(bloomPass);
 						*/
 
-			var params = {};
-			params = {
-				exposure: 1,
-				bloomStrength: 1.5,
-				bloomThreshold: 0,
-				bloomRadius: 0
-			};
-			params = {
-				exposure: 0.1,
-				bloomStrength: 0.7,
-				bloomThreshold: 0,
-				bloomRadius: 0
-			};
-//https://threejsfundamentals.org/threejs/lessons/threejs-post-processing.html
-			var bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
-			bloomPass.threshold = params.bloomThreshold;
-			bloomPass.strength = params.bloomStrength;
-			bloomPass.radius = params.bloomRadius;
-			composer.addPass( bloomPass );
+						var params = {};
+						params = {
+							exposure: 1,
+							bloomStrength: 1.5,
+							bloomThreshold: 0,
+							bloomRadius: 0
+						};
+						params = {
+							exposure: 0.1,
+							bloomStrength: 0.7,
+							bloomThreshold: 0,
+							bloomRadius: 0
+						};
+			//https://threejsfundamentals.org/threejs/lessons/threejs-post-processing.html
+						var bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
+						bloomPass.threshold = params.bloomThreshold;
+						bloomPass.strength = params.bloomStrength;
+						bloomPass.radius = params.bloomRadius;
+						composer.addPass( bloomPass );
 
 						const filmPass=new THREE.FilmPass(
 								0.35,	// noise intensity
@@ -268,7 +272,7 @@ require(
 								for(var i=0;i<paths.length;i++){
 									var path=paths[i];
 									const material = new THREE.MeshBasicMaterial({
-										color:new THREE.Color(`hsl(${path.color.getHSL().l*100},100%,50%)`),
+										color:new THREE.Color(`hsl(${100-path.color.getHSL().l*100},100%,25%)`),
 										opacity: 0.8,
 										transparent: true,
 										wireframe: true
@@ -292,20 +296,35 @@ require(
 								scene.add( group );
 								window.scene=scene;
 								var box=new THREE.Box3().setFromObject( group);
+/*
 								group.translateX(
 								    -box.min.x
 								)
 								group.translateY(
 								    -box.min.y
 								)
-								group.scale.x=(1/(box.max.x-box.min.x))
-								group.scale.y=(1/(box.max.y-box.min.y))
+								group.translateZ(
+								    -box.min.z
+								)
+*/
+								group.scale.x=(1/(box.max.x-box.min.x))*8
+								group.scale.y=-(1/(box.max.y-box.min.y))*8
+								group.scale.z=(1/(box.max.z-box.min.z))/4
+								box=new THREE.Box3().setFromObject( group);
+/*
 								group.translateX(
-								    -0.25
+								    -box.max.x/4
 								)
 								group.translateY(
-								    -0.25
+								    -box.max.y/4
 								)
+								//group.rotateOnAxis(new THREE.Vector3(1.0,0.0,0.0),-90);//rad);rad+=1;
+*/
+								var axis = new THREE.Vector3(1.0,0.0,0.0)
+								group.rotateOnWorldAxis(axis,-Math.PI/2)
+								camera.lookAt(group.position);
+/*
+*/
 							}),
 							function(xhr){
 								console.log((xhr.loaded/xhr.total*100)+'% loaded');
@@ -330,6 +349,9 @@ require(
 						}
 
 						let then=0;
+						var rad=0;
+						//declared once at the top of your code
+						var axis = new THREE.Vector3(0.0,0.0,1.0);//tilted a bit on x and y - feel free to plug your different axis here
 						function render(now){
 							now *= 0.001;
 							const deltaTime=now-then;
@@ -348,6 +370,11 @@ require(
 								cube.rotation.y=rot;
 							});
 */
+							const speed = 8;
+							const rot = now * speed;
+							//pivot.rotation.x=rot;
+							//group.rotateOnAxis(axis,0.005);//rad);rad+=1;
+							//group.rotateOnAxis(new THREE.Vector3(0.0,0.0,1.0),0.01);//rad);rad+=1;
 							composer.render(deltaTime);
 							requestAnimationFrame(render);
 						}
